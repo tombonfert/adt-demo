@@ -1,9 +1,18 @@
 # Databricks notebook source
+# MAGIC %pip install azure-digitaltwins-core
+
+# COMMAND ----------
+
+# MAGIC %pip install azure-identity
+
+# COMMAND ----------
+
 import pyspark.sql.functions as F
 import base64
 import os
 import json
 from azure.digitaltwins import *
+from azure.core.exceptions import ResourceExistsError
 from azure.digitaltwins.core import DigitalTwinsClient
 from azure.identity import *
 
@@ -20,11 +29,22 @@ os.environ["AZURE_CLIENT_SECRET"] = spSecret
 
 adt_url = "https://digital-twin-instance.api.eus2.digitaltwins.azure.net"
 models_path = './models/'
+twin_definitions_path = './twins/twin_definitions.json'
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Set up connection to ADT instance
 
 # COMMAND ----------
 
 credential = DefaultAzureCredential()
 service_client = DigitalTwinsClient(adt_url, credential)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Create models
 
 # COMMAND ----------
 
@@ -36,11 +56,50 @@ for fn in model_jsons:
 
 # COMMAND ----------
 
-created_models = service_client.create_models(models)
+try:
+  created_models = service_client.create_models(models)
+except Exception as e:
+  if isinstance(e, ResourceExistsError):
+    print("Some of the model ids already exist")
+    pass
+  else:
+    raise(e)
 
 # COMMAND ----------
 
-service_client.list_models().next()
+# MAGIC %md
+# MAGIC ### Create Twins
+
+# COMMAND ----------
+
+with open(twin_definitions_path) as fh:
+  twins_list = json.load(fh)['twins']
+  for twin_dict in twins_list:
+    temporary_twin = {
+      "$metadata": {
+        "$model": twin_dict['model_id']
+      },
+      "$dtId": twin_dict['twin_id']
+    }
+    print(temporary_twin)
+    created_twin = service_client.upsert_digital_twin(twin_dict['twin_id'], temporary_twin)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Create Relationships
+
+# COMMAND ----------
+
+with open(twin_definitions_path) as fh:
+  relationships = json.load(fh)['relationships']
+  for relationship in relationships:
+    print(relationship)
+    service_client.upsert_relationship(
+        relationship["$sourceId"],
+        relationship["$relationshipId"],
+        relationship
+    )
 
 # COMMAND ----------
 

@@ -1,0 +1,60 @@
+{
+  "twins": [
+    {
+      "twin_id": "ChocolateFactory",
+      "model_id": "dtmi:com:microsoft:iot:e2e:digital_factory:chocolate_factory;1"
+    },
+    {
+      "twin_id": "FactoryFloor",
+      "model_id": "dtmi:com:microsoft:iot:e2e:digital_factory:floor;1"
+    },
+    {
+      "twin_id": "ProductionLine",
+      "model_id": "dtmi:com:microsoft:iot:e2e:digital_factory:production_line;1"
+    },
+    {
+      "twin_id": "GrindingStep",
+      "model_id": "dtmi:com:microsoft:iot:e2e:digital_factory:production_step_grinding;1"
+    },
+    {
+      "twin_id": "MouldingStep",
+      "model_id": "dtmi:com:microsoft:iot:e2e:digital_factory:production_step_moulding;1"
+    },
+    {
+      "twin_id": "FanningStep",
+      "model_id": "dtmi:com:microsoft:iot:e2e:digital_factory:production_step_fanning;2"
+    }
+  ],
+  "relationships": [
+    {
+        "$relationshipId": "Factory has floors",
+        "$sourceId": "ChocolateFactory",
+        "$relationshipName": "rel_has_floors",
+        "$targetId": "FactoryFloor"
+    },
+    {
+        "$relationshipId": "Floor run production lines",
+        "$sourceId": "FactoryFloor",
+        "$relationshipName": "rel_runs_lines",
+        "$targetId": "ProductionLine"
+    },
+    {
+        "$relationshipId": "Line run production step",
+        "$sourceId": "ProductionLine",
+        "$relationshipName": "rel_runs_steps",
+        "$targetId": "GrindingStep"
+    },
+    {
+        "$relationshipId": "Line run production step 2",
+        "$sourceId": "ProductionLine",
+        "$relationshipName": "rel_runs_steps",
+        "$targetId": "MouldingStep"
+    },
+    {
+        "$relationshipId": "Line run production step 3",
+        "$sourceId": "ProductionLine",
+        "$relationshipName": "rel_runs_steps",
+        "$targetId": "FanningStep"
+    }
+  ]
+}
